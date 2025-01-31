@@ -2,6 +2,7 @@ import random
 import numpy as np
 from collections import defaultdict
 import matplotlib.pyplot as plt
+import pdb
 # inputs: 
 # a tuple of ints for state: dealer’s first card 1-10 and the player’s sum 1-21
 # a string for action: hit or stick
@@ -14,7 +15,7 @@ class Easy21():
         self.dealers_card = random.randint(1, 10)
         self.players_card = random.randint(1, 10)
         self.terminal_state = False
-        print(f'dealers card: {self.dealers_card}, players card: {self.players_card}')
+        # print(f'dealers card: {self.dealers_card}, players card: {self.players_card}')
         return self.dealers_card, self.players_card # (self.dealers_card, self.players_card), self.terminal_state
     
     def step(self, state, action):
@@ -47,13 +48,13 @@ class Easy21():
         else:
             print(f'unknowm action')
             return
-        print(action, players_sum)
+        # print(action, players_sum)
         next_state = (self.dealers_card, players_sum)
         return next_state, reward
     
     # choose between -1 (p=1/3) and +1 (p=2/3) 
     def sample_card(self):
-        color = np.random.choice([-1,1],  p=[1/3, 2/3])
+        color = 1 # np.random.choice([-1,1],  p=[1/3, 2/3])
         # print(f'color:{color}')
         number = random.randint(1, 10)
         return int(color*number)
@@ -74,27 +75,30 @@ taken from Sutton and Barto’s Blackjack example.
 def MCControl(episodes=100, gamma=1, N_0 = 100):
     actions = ["hit", "stick"]
     Q = defaultdict(lambda: defaultdict(float))# {}# defaultdict(int) # state-action value function 
-    N = defaultdict(lambda: 1e-3) # number of times a state-action pair visited. a dictionary of tuples
+    N = defaultdict(lambda: 1e-5) # number of times a state-action pair visited. a dictionary of tuples
     returns = {} # returns per state-action pair
     env = Easy21()
     for episode in range(episodes):
         state = env.reset()
-        episode_memory = []
+        episode_memory = set()
         episode_return = 0
 
         while not env.terminal_state:
             
-            eps_t = N_0/(N_0 + N[(state,"hit")]+ N[(state,"stick")])
+            eps_t = N_0/(N_0 + N[(state,"hit")]+ N[(state,"stick")]) # for eps greedy exploration. in time, eps_t becomes less and less
             # TODO: choose action
-            is_greedy = np.random.choice([False,True],  p=[eps_t, 1-eps_t])
-            if is_greedy:
-                try:
-                    action = max((action for s[a] in Q if s == state),
-                                    key=lambda action: Q[state][action]) # if state is not visited before
-                except:
-                    action = np.random.choice(["hit","stick"],  p=[0.5, 0.5]) # choose randomly
-                    # Q[state][action] = 0
-                    # print(Q[state][action])
+            is_greedy = np.random.choice([False,True],  p=[eps_t, 1-eps_t]) # with decreasing eps, exploration decreases 
+            if is_greedy: # if greedy choose the action producing highest value
+                # pdb.set_trace()
+                # print('it is greedy now!')
+                # try:
+                if 'hit' not in Q[state]: Q[state]['hit']==0
+                if 'stick' not in Q[state]: Q[state]['stick']==0
+                action = max((a for a in Q[state]), key=lambda a: Q[state][a])
+                # except: # if state is not visited before
+                # action = np.random.choice(["hit","stick"],  p=[0.5, 0.5]) # choose randomly
+                # Q[state][action] = 0
+                # print(Q[state][action])
                 
             else:
                 action = np.random.choice(["hit","stick"],  p=[0.5, 0.5])
@@ -107,14 +111,32 @@ def MCControl(episodes=100, gamma=1, N_0 = 100):
             episode_return += reward
             alpha_t = 1/N[(state,action)] # update at the end of episode
             Q[state][action] = Q[state][action] + alpha_t*(episode_return-Q[state][action])
+            episode_memory.add((state, action, reward))
             # print(state, action, reward, Q[state][action])
             state = next_state
-        print(state, action, reward, Q[state][action])
+        if action == 'hit':
+            pass
+            # print(state, action, reward, Q[state][action])
     return Q
 
 def plot_optimal_value_function(Q):
-    print
+    dealers_showing = []
+    players_sum = []
+    for key, value in Q.items():
+        dealers_showing.append(key[0])
+        players_sum.append(key[1])
+        # print(key,value)
+    ax = plt.axes(projection ='3d')
+    
+    value_func = np.ones(len(players_sum))
+    # plotting
+    ax.plot3D(dealers_showing, players_sum, value_func, 'green')
+    ax.set_title('3D line plot geeks for geeks')
+    plt.show()
 
-Q = MCControl(episodes=100, gamma=1, N_0 = 100)
-# print(Q)
-plot_optimal_value_function(Q)
+def TDLearning(episodes=10000, gamma=1, N_0 = 100):
+    pass
+if __name__ == "__main__":
+    Q = MCControl(episodes=int(1e6), gamma=1, N_0 = 100) # agent uses look up table 
+    print(Q)
+    plot_optimal_value_function(Q)
