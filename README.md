@@ -10,7 +10,7 @@ The game involves a player and dealer drawing cards, with the goal of maximizing
 
 ### Optimal Value Function
 
-![Value Function](figures/value_function_mc.png)
+![Value Function](figures/value_func_mc.png)
 
 This shows the learned value function \( V^*(s) = \max_a Q(s, a) \) for each state after training on 1 million episodes.
 
