@@ -12,10 +12,10 @@ The game involves a player and dealer drawing cards, with the goal of maximizing
 
 ![Value Function](figures/value_func_mc.png)
 
-This shows the learned value function \( V^*(s) = \max_a Q(s, a) \) for each state after training on 1 million episodes.
+The plot shows the learned value function for each state after training on 1 million episodes.
 
 ### Optimal Policy
 
 ![Optimal Policy](figures/optimal_policy_mc.png)
 
-This heatmap represents the optimal policy \( \pi^*(s) = \arg\max_a Q(s, a) \). White = stick, black = hit.
+This heatmap represents the optimal policy. White = stick, black = hit.
