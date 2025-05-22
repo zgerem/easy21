@@ -3,13 +3,20 @@ import numpy as np
 from collections import defaultdict
 import pdb
 import itertools
-import easy21
+import easy21_env
+from utils import plot_optimal_value_function, plot_optimal_policy
+
+#### Monte Carlo Control for Easy21
+# input:
+# number of episodes to run, discount factor gamma (default 1), and exploration constant N_0
+# returns:
+# a state-action value function Q(s, a) as a nested defaultdict
 
 def MCControl(episodes=100, gamma=1, N_0 = 100):
     actions = ["hit", "stick"]
     Q = defaultdict(lambda: defaultdict(float))# {}# defaultdict(int) # state-action value function 
     N = defaultdict(lambda: 1e-5) # number of times a state-action pair visited. a dictionary of tuples
-    env = easy21.Easy21()
+    env = easy21_env.Easy21()
     for episode in range(episodes):
         state = env.reset()
         episode_memory = []
@@ -52,5 +59,7 @@ def MCControl(episodes=100, gamma=1, N_0 = 100):
     return Q
 
 if __name__ == "__main__":
-    Q = MCControl(episodes=int(1e6), gamma=1, N_0 = 100) # agent uses look up table 
+    Q = MCControl(episodes=int(1e6), gamma=1, N_0=100)
     
+    plot_optimal_value_function(Q, title="Monte Carlo Control: Value Function")
+    plot_optimal_policy(Q, title="Monte Carlo Control: Optimal Policy")
