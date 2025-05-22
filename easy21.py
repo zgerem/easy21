@@ -4,12 +4,13 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import pdb
 import itertools
-# inputs: 
-# a tuple of ints for state: dealer’s first card 1-10 and the player’s sum 1-21
-# a string for action: hit or stick
+
+# input:
+# state is a tuple (dealer's first card, player's sum)
+# action is a string: "hit" or "stick"
 # returns:
-# a sample of the next state s, may be terminal if the game is finished
-# reward r
+# a new state (dealer's card, updated player sum), or terminal if game ends
+# a reward: -1, 0, or 1 depending on the outcome
 class Easy21():
     
     def reset(self):
@@ -25,7 +26,7 @@ class Easy21():
         reward = 0
         
         if action == 'stick':
-            # TODO: play out the dealer’s cards and return the final reward and terminal state
+            # play out the dealer’s cards and return the final reward and terminal state
             while dealers_sum < 17:
                 dealers_sum += self.sample_card()
             self.terminal_state = True
@@ -43,11 +44,8 @@ class Easy21():
             if players_sum > 21:
                 reward = -1
                 self.terminal_state = True
-            if players_sum == 21:
-                reward = 1
-                self.terminal_state = True
         else:
-            print(f'unknowm action')
+            print(f'unknown action')
             return
         # print(action, players_sum)
         next_state = (self.dealers_card, players_sum)
@@ -60,24 +58,11 @@ class Easy21():
         number = random.randint(1, 10)
         return int(color*number)
     
-   
-""" 
-Apply Monte-Carlo control to Easy21. Initialise the value function to zero. Use
-a time-varying scalar step-size of alphat = 1/N(st, at) and an epsilon-greedy exploration
-strategy with t = N0/(N0 + N(st)), where N0 = 100 is a constant, N(s) is
-the number of times that state s has been visited, and N(s, a) is the number
-of times that action a has been selected from state s. Feel free to choose an
-alternative value for N0, if it helps producing better results. Plot the optimal
-value function V
-(s) = maxa 
-(s, a) using similar axes to the following figure
-taken from Sutton and Barto’s Blackjack example.
-"""
+
 def MCControl(episodes=100, gamma=1, N_0 = 100):
     actions = ["hit", "stick"]
     Q = defaultdict(lambda: defaultdict(float))# {}# defaultdict(int) # state-action value function 
     N = defaultdict(lambda: 1e-5) # number of times a state-action pair visited. a dictionary of tuples
-    returns = {} # returns per state-action pair
     env = Easy21()
     for episode in range(episodes):
         state = env.reset()
@@ -92,8 +77,8 @@ def MCControl(episodes=100, gamma=1, N_0 = 100):
             if is_greedy: # if greedy, choose the action producing highest value
                 # print(f'it is greedy now in episode: {episode}!')
                 
-                if 'hit' not in Q[state]: Q[state]['hit']==0
-                if 'stick' not in Q[state]: Q[state]['stick']==0
+                if 'hit' not in Q[state]: Q[state]['hit']=0
+                if 'stick' not in Q[state]: Q[state]['stick']=0
                 action = max((a for a in Q[state]), key=lambda a: Q[state][a])
                 
             else:
@@ -107,12 +92,13 @@ def MCControl(episodes=100, gamma=1, N_0 = 100):
             state = next_state
         episode_return = 0
         seen_steps = []
-        for i in range(len(episode_memory)):
+        for i in reversed(range(len(episode_memory))):
             state, action = episode_memory[i]
+            
             if (state,action) in seen_steps:
                 continue
+            episode_return = gamma*episode_return+episode_rewards[i]
             seen_steps.append((state, action))
-            episode_return += episode_rewards[i]
             alpha_t = 1/N[(state,action)] # update at the end of episode
             N[(state,action)]+=1
             Q[state][action] = Q[state][action] + alpha_t*(episode_return-Q[state][action])
@@ -144,13 +130,13 @@ def plot_optimal_value_function(Q):
 
     ax.set_xlabel('Dealer Showing')
     ax.set_ylabel('Player Sum')
-    ax.set_zlabel('Best Value')
-    ax.set_title('Optimal Value Function (Best Action Value per State)')
+    ax.set_zlabel('V*(s) = max_a Q(s, a)')
+    ax.set_title('Monte Carlo Control: Optimal Value Function V*(s)')
 
     plt.show()
 
 def TDLearning(episodes=10000, gamma=1, N_0 = 100):
     pass
 if __name__ == "__main__":
-    Q = MCControl(episodes=int(1e5), gamma=1, N_0 = 100) # agent uses look up table 
+    Q = MCControl(episodes=int(1e6), gamma=1, N_0 = 100) # agent uses look up table 
     plot_optimal_value_function(Q)
