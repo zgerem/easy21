@@ -7,13 +7,13 @@ Implementation of Easy21 from Sutton & Barto's Reinforcement Learning book using
 
 ## Results
 
-### Optimal Value Function (Monte Carlo)
+### Optimal Value Function (Monte Carlo Control)
 
 ![Value Function](figures/value_func_mc.png)
 
 The plot shows the learned value function for each state after training on 1 million episodes.
 
-### Optimal Policy (Monte Carlo)
+### Optimal Policy (Monte Carlo Control)
 
 ![Optimal Policy](figures/optimal_policy_mc.png)
 
