@@ -25,10 +25,9 @@ def MCControl(episodes=100, gamma=1, N_0 = 100):
         while not env.terminal_state:
             
             eps_t = N_0/(N_0 + N[(state,"hit")]+ N[(state,"stick")]) # for eps greedy exploration. in time, eps_t becomes less and less
-            # TODO: choose action
             is_greedy = np.random.choice([False,True],  p=[eps_t, 1-eps_t]) # with decreasing eps, exploration decreases 
+            
             if is_greedy: # if greedy, choose the action producing highest value
-                # print(f'it is greedy now in episode: {episode}!')
                 
                 if 'hit' not in Q[state]: Q[state]['hit']=0
                 if 'stick' not in Q[state]: Q[state]['stick']=0
@@ -52,7 +51,7 @@ def MCControl(episodes=100, gamma=1, N_0 = 100):
                 continue
             episode_return = gamma*episode_return+episode_rewards[i]
             seen_steps.append((state, action))
-            alpha_t = 1/N[(state,action)] # update at the end of episode
+            alpha_t = 1/N[(state,action)] 
             N[(state,action)]+=1
             Q[state][action] = Q[state][action] + alpha_t*(episode_return-Q[state][action])
         
